@@ -67,7 +67,7 @@ LAO_popmap15_admin001 <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_
 LAO_popmap15adj_admin001 <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap15adj_admin001_v2.tif")
 ```
 
-100-resolution raster files of urban changes in 2000 and 2010, from
+90m-resolution raster files of urban changes in 2000 and 2010, from
 [WorldPop](https://www.worldpop.org/geodata/summary?id=1228):
 
 ```{r}
