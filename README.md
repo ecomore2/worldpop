@@ -7,7 +7,7 @@
 
 <!-- badges: end -->
 
-Raw raster files data are downloaded from
+Raw raster files data (**100-m resolution**) are downloaded from
 [WorldPop](https://www.worldpop.org) and are cropped by the polygon of
 the province of Vientiane prefecture that is dowloaded from
 [GADM](https://gadm.org). Adjusted population sizes are corrected so
