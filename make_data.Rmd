@@ -44,7 +44,7 @@ knitr::knit_hooks$set(
     options(prompt = if (options$engine %in% c("sh", "bash")) "$ " else "> ")
   })
 
-knitr::opts_chunk$set(margin = TRUE, prompt = TRUE, comment = "",
+knitr::opts_chunk$set(margin = TRUE, prompt = TRUE, comment = "", eval = FALSE,
                       collapse = TRUE, cache = FALSE, autodep = TRUE,
                       dev.args = list(pointsize = 11), fig.height = 3.5,
                       fig.width = 4.24725, fig.retina = 2, fig.align = "center")
@@ -52,4 +52,88 @@ knitr::opts_chunk$set(margin = TRUE, prompt = TRUE, comment = "",
 options(width = 137)
 ```
 
+```{r}
+library(sp)
+library(raster)
+```
+
+100m-resolution raster files of population size in 2010 and 2015, raw and adjusted,
+from [WorldPop](https://www.worldpop.org/geodata/summary?id=61):
+
+```{r}
+LAO_popmap10_admin001 <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap10_admin001_v2.tif")
+LAO_popmap10adj_admin001 <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap10adj_admin001_v2.tif")
+LAO_popmap15_admin001 <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap15_admin001_v2.tif")
+LAO_popmap15adj_admin001 <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap15adj_admin001_v2.tif")
+```
+
+100-resolution raster files of urban changes in 2000 and 2010, from
+[WorldPop](https://www.worldpop.org/geodata/summary?id=1228):
+
+```{r}
+LAO00urbchg <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Urban_change/LAO00urbchg.tif")
+LAO10urbchg <- raster("data-raw/Lao_People_s_Democratic_Republic_100m_Urban_change/LAO10urbchg.tif")
+```
+
+Downloading province and district polygons from [GADM](https://gadm.org), if not
+available on the disk:
+
+```{r}
+for (i in 1:2) {
+  file <- paste0("gadm36_LAO_", i, "_sp.rds")
+  if (! file.exists(file))
+    download.file(paste0("https://biogeo.ucdavis.edu/data/gadm3.6/Rsp/", file), file)
+}
+```
+
+Loading the provinces' polygons:
+
+```{r}
+gadm36_LAO_1 <- readRDS("gadm36_LAO_1_sp.rds")
+```
+
+Extracting the polygon of Vientiane prefecture:
+
+```{r}
+vientiane <- gadm36_LAO_1[gadm36_LAO_1$NAME_1 == "Vientiane [prefecture]", ]
+```
+
+A function that crops a population raster file around the polygon of the province
+of Vientiane prefecture:
+
+```{r}
+crop2vientiane <- function(rstr) {
+# Cropping the population raster file around the borders of the province of
+# Vientiane prefecture (makes the object smaller in memory):
+  rstr <- crop(rstr, vientiane)
+# Rasterizing the borders of the province of Vientiane prefecture:
+  themask <- rasterize(vientiane, rstr)
+# Masking the population raster file around the rasterized borders of the province
+# of Vientiane prefecture (makes it even smaller in memory):
+  mask(rstr, themask)
+}
+```
+
+Croping the populations raster files:
+
+```{r}
+VT_popmap10_admin001 <- crop2vientiane(LAO_popmap10_admin001)
+VT_popmap10adj_admin001 <- crop2vientiane(LAO_popmap10adj_admin001)
+VT_popmap15_admin001 <- crop2vientiane(LAO_popmap15_admin001)
+VT_popmap15adj_admin001 <- crop2vientiane(LAO_popmap15adj_admin001)
+VT00urbchg <- crop2vientiane(LAO00urbchg)
+VT10urbchg <- crop2vientiane(LAO10urbchg)
+```
+
+Writing to disk:
+
+```{r}
+if (!dir.exists("data")) dir.create("data")
+writeRaster(VT_popmap10_admin001, "data/VT_popmap10_admin001.tif", "GTiff", overwrite = TRUE)
+writeRaster(VT_popmap10adj_admin001, "data/VT_popmap10adj_admin001.tif", "GTiff", overwrite = TRUE)
+writeRaster(VT_popmap15_admin001, "data/VT_popmap15_admin001.tif", "GTiff", overwrite = TRUE)
+writeRaster(VT_popmap15adj_admin001, "data/VT_popmap15adj_admin001.tif", "GTiff", overwrite = TRUE)
+writeRaster(VT00urbchg, "data/VT00urbchg.tif", "GTiff", overwrite = TRUE)
+writeRaster(VT10urbchg, "data/VT10urbchg.tif", "GTiff", overwrite = TRUE)
+```
 
