@@ -399,7 +399,8 @@ title wherever you want to display the reference list.
 }
 </style>
 <pre class="r"><code>&gt; library(sp)
-&gt; library(raster)</code></pre>
+&gt; library(raster)
+&gt; library(ecomore)</code></pre>
 <p>100m-resolution raster files of population size in 2010 and 2015, raw and adjusted, from <a href="https://www.worldpop.org/geodata/summary?id=61">WorldPop</a>:</p>
 <pre class="r"><code>&gt; LAO_popmap10_admin001 &lt;- raster(&quot;data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap10_admin001_v2.tif&quot;)
 &gt; LAO_popmap10adj_admin001 &lt;- raster(&quot;data-raw/Lao_People_s_Democratic_Republic_100m_Population/LAO_popmap10adj_admin001_v2.tif&quot;)
@@ -412,30 +413,19 @@ title wherever you want to display the reference list.
 <pre class="r"><code>&gt; for (i in 1:2) {
 +   file &lt;- paste0(&quot;gadm36_LAO_&quot;, i, &quot;_sp.rds&quot;)
 +   if (! file.exists(file))
-+     download.file(paste0(&quot;https://biogeo.ucdavis.edu/data/gadm3.6/Rsp/&quot;, file), file)
++     download.file(paste0(&quot;https://biogeo.ucdavis.edu/data/gadm3.6/Rsp/&quot;, file), paste0(&quot;data-raw/&quot;, file))
 + }</code></pre>
 <p>Loading the provinces’ polygons:</p>
 <pre class="r"><code>&gt; gadm36_LAO_1 &lt;- readRDS(&quot;gadm36_LAO_1_sp.rds&quot;)</code></pre>
 <p>Extracting the polygon of Vientiane prefecture:</p>
 <pre class="r"><code>&gt; vientiane &lt;- gadm36_LAO_1[gadm36_LAO_1$NAME_1 == &quot;Vientiane [prefecture]&quot;, ]</code></pre>
-<p>A function that crops a population raster file around the polygon of the province of Vientiane prefecture:</p>
-<pre class="r"><code>&gt; crop2vientiane &lt;- function(rstr) {
-+ # Cropping the population raster file around the borders of the province of
-+ # Vientiane prefecture (makes the object smaller in memory):
-+   rstr &lt;- crop(rstr, vientiane)
-+ # Rasterizing the borders of the province of Vientiane prefecture:
-+   themask &lt;- rasterize(vientiane, rstr)
-+ # Masking the population raster file around the rasterized borders of the province
-+ # of Vientiane prefecture (makes it even smaller in memory):
-+   mask(rstr, themask)
-+ }</code></pre>
 <p>Croping the populations raster files:</p>
-<pre class="r"><code>&gt; VT_popmap10_admin001 &lt;- crop2vientiane(LAO_popmap10_admin001)
-&gt; VT_popmap10adj_admin001 &lt;- crop2vientiane(LAO_popmap10adj_admin001)
-&gt; VT_popmap15_admin001 &lt;- crop2vientiane(LAO_popmap15_admin001)
-&gt; VT_popmap15adj_admin001 &lt;- crop2vientiane(LAO_popmap15adj_admin001)
-&gt; VT00urbchg &lt;- crop2vientiane(LAO00urbchg)
-&gt; VT10urbchg &lt;- crop2vientiane(LAO10urbchg)</code></pre>
+<pre class="r"><code>&gt; VT_popmap10_admin001 &lt;- crop_raster(LAO_popmap10_admin001, vientiane)
+&gt; VT_popmap10adj_admin001 &lt;- crop_raster(LAO_popmap10adj_admin001, vientiane)
+&gt; VT_popmap15_admin001 &lt;- crop_raster(LAO_popmap15_admin001, vientiane)
+&gt; VT_popmap15adj_admin001 &lt;- crop_raster(LAO_popmap15adj_admin001, vientiane)
+&gt; VT00urbchg &lt;- crop_raster(LAO00urbchg, vientiane)
+&gt; VT10urbchg &lt;- crop_raster(LAO10urbchg, vientiane)</code></pre>
 <p>Writing to disk:</p>
 <pre class="r"><code>&gt; if (!dir.exists(&quot;data&quot;)) dir.create(&quot;data&quot;)
 &gt; writeRaster(VT_popmap10_admin001, &quot;data/VT_popmap10_admin001.tif&quot;, &quot;GTiff&quot;, overwrite = TRUE)

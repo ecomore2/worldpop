@@ -55,6 +55,7 @@ options(width = 137)
 ```{r}
 library(sp)
 library(raster)
+library(ecomore)
 ```
 
 100m-resolution raster files of population size in 2010 and 2015, raw and adjusted,
@@ -82,7 +83,7 @@ available on the disk:
 for (i in 1:2) {
   file <- paste0("gadm36_LAO_", i, "_sp.rds")
   if (! file.exists(file))
-    download.file(paste0("https://biogeo.ucdavis.edu/data/gadm3.6/Rsp/", file), file)
+    download.file(paste0("https://biogeo.ucdavis.edu/data/gadm3.6/Rsp/", file), paste0("data-raw/", file))
 }
 ```
 
@@ -98,31 +99,15 @@ Extracting the polygon of Vientiane prefecture:
 vientiane <- gadm36_LAO_1[gadm36_LAO_1$NAME_1 == "Vientiane [prefecture]", ]
 ```
 
-A function that crops a population raster file around the polygon of the province
-of Vientiane prefecture:
-
-```{r}
-crop2vientiane <- function(rstr) {
-# Cropping the population raster file around the borders of the province of
-# Vientiane prefecture (makes the object smaller in memory):
-  rstr <- crop(rstr, vientiane)
-# Rasterizing the borders of the province of Vientiane prefecture:
-  themask <- rasterize(vientiane, rstr)
-# Masking the population raster file around the rasterized borders of the province
-# of Vientiane prefecture (makes it even smaller in memory):
-  mask(rstr, themask)
-}
-```
-
 Croping the populations raster files:
 
 ```{r}
-VT_popmap10_admin001 <- crop2vientiane(LAO_popmap10_admin001)
-VT_popmap10adj_admin001 <- crop2vientiane(LAO_popmap10adj_admin001)
-VT_popmap15_admin001 <- crop2vientiane(LAO_popmap15_admin001)
-VT_popmap15adj_admin001 <- crop2vientiane(LAO_popmap15adj_admin001)
-VT00urbchg <- crop2vientiane(LAO00urbchg)
-VT10urbchg <- crop2vientiane(LAO10urbchg)
+VT_popmap10_admin001 <- crop_raster(LAO_popmap10_admin001, vientiane)
+VT_popmap10adj_admin001 <- crop_raster(LAO_popmap10adj_admin001, vientiane)
+VT_popmap15_admin001 <- crop_raster(LAO_popmap15_admin001, vientiane)
+VT_popmap15adj_admin001 <- crop_raster(LAO_popmap15adj_admin001, vientiane)
+VT00urbchg <- crop_raster(LAO00urbchg, vientiane)
+VT10urbchg <- crop_raster(LAO10urbchg, vientiane)
 ```
 
 Writing to disk:
