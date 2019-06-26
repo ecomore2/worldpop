@@ -10,9 +10,11 @@
 Raw raster files data (**100-m resolution**) are downloaded from
 [WorldPop](https://www.worldpop.org) and are cropped by the polygon of
 the province of Vientiane prefecture that is dowloaded from
-[GADM](https://gadm.org). Adjusted population sizes are corrected so
-that the total population size in the raster corresponds to the UN
-country estimate. All the details are in the [cleaning
+[GADM](https://gadm.org). Data are not projected
+([EPSG](http://www.epsg.org):[4326](https://epsg.io/4326)), with
+coordinates expressed in decimal degrees. Adjusted population sizes are
+corrected so that the total population size in the raster corresponds to
+the UN country estimate. All the details are in the [cleaning
 pipeline](https://ecomore2.github.io/worldpop/make_data.html).
 
 Cleaned data can be downloaded as follows:
